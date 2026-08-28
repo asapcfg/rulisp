@@ -2,12 +2,11 @@
 #define lexer_h
 
 #include <stddef.h>
-
 typedef enum {
 	lskobka,
 	rskobka,
-	identifier,
 	string,
+	symbol,
 	eof,
 	error
 } TokenType;
@@ -26,8 +25,8 @@ typedef struct {
 	size_t column;
 } Lexer;
 
-void lexer_init(Lexer *lexer, const char *source);
-Token lexer_next(Lexer *lexer);
-void token_free(Token *token);
+void lexerinit(Lexer *lexer, const char *source);
+Token lexernext(Lexer *lexer);
+void tokenfree(Token *token);
 
 #endif

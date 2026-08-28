@@ -3,19 +3,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-static char *copy_range(const char *start, size_t length)
-{
-	char *result = malloc(length + 1);
-	if (!result)
-		return NULL;
-	memcpy(result, start, length);
-	result[length] = '\0';
-	return result;
-}
-
 static void advance(Lexer *lexer)
 {
-	if (lexer->source[lexer->position] == '\n') {
+	char c = lexer->source[lexer->position];
+
+	if (c == '\n') {
 		lexer->line++;
 		lexer->column = 1;
 	} else {
@@ -24,10 +16,17 @@ static void advance(Lexer *lexer)
 	lexer->position++;
 }
 
-static void skip_whitespace(Lexer *lexer)
+static char *copystring(const char *start, size_t length)
 {
-	while (isspace((unsigned char)lexer->source[lexer->position]))
-		advance(lexer);
+	char *result = malloc(length + 1);
+
+	if (!result)
+		return NULL;
+
+	memcpy(result, start, length);
+	result[length] = '\0';
+
+	return result;
 }
 
 void lexer_init(Lexer *lexer, const char *source)
@@ -38,86 +37,87 @@ void lexer_init(Lexer *lexer, const char *source)
 	lexer->column = 1;
 }
 
-Token lexer_next(Lexer *lexer)
+static void skipprobel(Lexer *lexer)
 {
-	skip_whitespace(lexer);
+	while (isspace((unsigned char)lexer->source[lexer->position]))
+		advance(lexer);
+}
+
+Token lexernext(Lexer *lexer)
+{
+	skipprobel(lexer);
+
 	Token token = {
 		.type = error,
 		.value = NULL,
 		.line = lexer->line,
 		.column = lexer->column
 	};
-	
-	char current = lexer->source[lexer->position];
-	if (current == '\0') {
+
+	char c = lexer->source[lexer->position];
+
+	if (c == '\0') {
 		token.type = eof;
 		return token;
 	}
 
-	if (current == '(') {
-		advance(lexer);
+	if (c == '(') {
 		token.type = lskobka;
-		return token;
-	}
-	
-	if (current == ')') {
 		advance(lexer);
-		token.type = rskobka;
 		return token;
 	}
-	if (current == '"') {
+
+	if (c == ')') {
+		token.type = rskobka;
+		advance(lexer);
+		return token;
+	}
+
+	if (c == '"') {
 		advance(lexer);
 		size_t start = lexer->position;
-		size_t length = 0;
 
 		while (lexer->source[lexer->position] != '\0' &&
-               		lexer->source[lexer->position] != '"') {
-            	if (lexer->source[lexer->position] == '\\' &&
-                	lexer->source[lexer->position + 1] != '\0') {
-                	advance(lexer);
-            	}
-
-           	advance(lexer);
-            	length++;
+				lexer->source[lexer->position] != '"') {
+			advance(lexer);
 		}
-		if(lexer->source[lexer->position] != '"') {
+
+		if (lexer->source[lexer->position] != '"') {
 			token.type = error;
-			token.value = copy_range(
-			"незакрытая строка",
-			strlen("незакрытая строка")
-					);
+			token.value = copystring(
+			"незавершённая строка",
+			18
+			);
 			return token;
 		}
+
 		token.type = string;
-		token.value = copy_range(
+		token.value = copystring(
 			lexer->source + start,
-			length
-		);
+			lexer->position - start
+				);
 		advance(lexer);
 		return token;
 	}
 
 	size_t start = lexer->position;
 
-    	while (lexer->source[lexer->position] != '\0' &&
-           	!isspace((unsigned char)lexer->source[lexer->position]) &&
-           	lexer->source[lexer->position] != '(' &&
-           	lexer->source[lexer->position] != ')') {
-	        advance(lexer);
-    	}
-
-	token.type = identifier;
-    	token.value = copy_range(
-        	lexer->source + start,
-        	lexer->position - start
-    	);
-
-    	return token;
+	while(lexer->source[lexer->position] != '\0' &&
+			!isspace((unsigned char)lexer->source[lexer->position]) &&
+			lexer->source[lexer->position] != '(' &&
+			lexer->source[lexer->position] != ')') {
+		advance(lexer);
 	}
 
-	void token_free(Token *token)
-	{
-	    free(token->value);
-	    token->value = NULL;
-	}
-
+	token.type = symbol;
+	token.value = copystring(
+		lexer->source + start,
+		lexer->position - start
+			);
+		return token;
+}
+void tokenfree(Token *token)
+{
+	free(token->value);
+	token->value = NULL;
+}
