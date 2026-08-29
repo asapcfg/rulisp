@@ -8,7 +8,7 @@
 static void print_version(void)
 {
     printf(
-        "RULisp version 0.1.0\n"
+        "RULisp version 0.2.0\n"
     );
 }
 
