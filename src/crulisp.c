@@ -42,13 +42,23 @@ static void generate_expression(FILE *file, AST *node)
 		if (!function)
 			return;
 
-		// (вывод STRING)
+		// (вывод STRING) 0.1.0
 		if (function->type == AST_SYMBOL &&
 			strcmp(function->value, "вывод") == 0) {
 			AST *argument = function->next;
 			fprintf(file, "printf(\"%%s\\n\", ");
 			generate_expression(file, argument);
 			fprintf(file, ")");
+			return;
+		}
+		// (вернуть NUM) - 0.2.0
+		if (function->type == AST_SYMBOL &&
+			strcmp(function->value, "вернуть") == 0) {
+			AST *argument = function->next;
+//			char *num = generate_express
+			fprintf(file, "return ");
+			generate_expression(file, argument);
+			fprintf(file, ";\n");
 			return;
 		}
 
@@ -90,7 +100,7 @@ int crulispgen(AST *root, const char *filename)
 		expression = expression->next;
 	}
 	fprintf(file,
-			"    return 0;\n"
+			""
 			"}\n"
 	       );
 	fclose(file);
