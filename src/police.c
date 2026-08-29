@@ -12,7 +12,7 @@ static int check_list(AST *list)
 
 	AST *first = list->children;
 
-	if (first->type != ast_symbol) {
+	if (first->type != AST_SYMBOL) {
 		fprintf(
 			stderr,
 			"первым элементом вызова должен быть символ\n"
@@ -31,16 +31,16 @@ static int check_list(AST *list)
 	if (strcmp(first->value, "фун") == 0) {
 		AST *signature = first->next;
 		if (!signature ||
-				signature->type != ast_list) {
+				signature->type != AST_LIST) {
 			fprintf(
 				stderr,
 				"у функции должно быть название функции\n"
 			);
 			return 0;
-					);
+					
 		}
 		if (!signature->children ||
-				signature->children->type != ast_symbol) {
+				signature->children->type != AST_SYMBOL) {
 			fprintf(
 				stderr,
 				"неправильное название функции\n"
@@ -54,11 +54,11 @@ static int check_list(AST *list)
 static int check_expression(AST *node)
 {
 		switch (node->type) {
-			case ast_string:
+			case AST_STRING:
 				return 1;
-			case ast_symbol:
+			case AST_SYMBOL:
 				return 1;
-			case ast_list:
+			case AST_LIST:
 				return check_list(node);
 			default:
 				return 0;

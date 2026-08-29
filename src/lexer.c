@@ -29,7 +29,7 @@ static char *copystring(const char *start, size_t length)
 	return result;
 }
 
-void lexer_init(Lexer *lexer, const char *source)
+void lexerinit(Lexer *lexer, const char *source)
 {
 	lexer->source = source;
 	lexer->position = 0;

@@ -1,16 +1,16 @@
 #include "parser.h"
-
+#include "lexer.h"
 #include <stdio.h>
 
 static void next_token(Parser *parser)
 {
-    token_free(&parser->current);
-    parser->current = lexer_next(&parser->lexer);
+    tokenfree(&parser->current);
+    parser->current = lexernext(&parser->lexer);
 }
 
 void parser_init(Parser *parser, const char *source)
 {
-    lexer_init(&parser->lexer, source);
+    lexerinit(&parser->lexer, source);
 
     parser->current.type = error;
     parser->current.value = NULL;
@@ -98,7 +98,7 @@ static AST *parse_expression(Parser *parser)
             );
             return NULL;
 
-        case TOKEN_EOF:
+        case eof:
             fprintf(stderr, "конец файла не там где я хочу\n");
             return NULL;
 
